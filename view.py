@@ -15,7 +15,7 @@ class User:
 def lista_uzytkownikow():
     listbox_lista_obiektow.delete(0,END)
     for idx,user in enumerate(users):
-        listbox_lista_obiektow.insert(idx, f'{user.name}  {user.surname} ')
+        listbox_lista_obiektow.insert(idx, f'{user.name}  {user.surname} {user.posts} {user.location}')
 
 def dodaj_uzytkownika():
     imie = entry_imie.get()
