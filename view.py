@@ -1,5 +1,7 @@
 from tkinter import *
 import tkintermapview
+import requests
+from bs4 import BeautifulSoup
 
 #settings
 users = []
@@ -10,12 +12,23 @@ class User:
         self.surname = surname
         self.posts = posts
         self.location = location
+        self.wspolrzedne = User.wspolrzedne(self)
 
+    def wspolrzedne(self) -> list:
+        url: str = f'https://pl.wikipedia.org/wiki/{self.location}'
+        response = requests.get(url)
+        response_html = BeautifulSoup(response.text, 'html.parser')
+        return [
+            float(response_html.select('.latitude')[1].text.replace(",", ".")),
+            float(response_html.select('.longitude')[1].text.replace(",", "."))
+        ]
 
 def lista_uzytkownikow():
     listbox_lista_obiektow.delete(0,END)
     for idx,user in enumerate(users):
         listbox_lista_obiektow.insert(idx, f'{user.name}  {user.surname} {user.posts} {user.location}')
+        user.marker = map_widget.set_marker(user.wspolrzedne[0], user.wspolrzedne[1],
+                              text=f"{user.name}")
 
 def dodaj_uzytkownika():
     imie = entry_imie.get()
@@ -24,13 +37,12 @@ def dodaj_uzytkownika():
     lokalizacja = entry_lokalizacja.get()
     print(imie,nazwisko)
     users.append(User(imie, nazwisko, posty, lokalizacja))
-    lista_uzytkownikow()
 
+    lista_uzytkownikow()
     entry_imie.delete(0,END)
     entry_nazwisko.delete(0, END)
     entry_posty.delete(0, END)
     entry_lokalizacja.delete(0, END)
-
     entry_imie.focus()
 
 def usun_uzytkownika():
@@ -45,9 +57,12 @@ def pokaz_szczegoly_uzytkownika():
     nazwisko = users[i].surname
     posty = users[i].posts
     lokalizacja = users[i].location
-    label_nazwisko_szczegoly_obiektu_wartosc.config(text=imie)
-    label_posty_szczegoly_obiektu_wartosc.config(text=imie)
-    label_lokalizacja_szczegoly_obiektu_wartosc.config(text=imie)
+    label_imie_szczegoly_obiektu_wartosc.config(text=imie)
+    label_nazwisko_szczegoly_obiektu_wartosc.config(text=nazwisko)
+    label_posty_szczegoly_obiektu_wartosc.config(text=posty)
+    label_lokalizacja_szczegoly_obiektu_wartosc.config(text=lokalizacja)
+    map_widget.set_position(users[i].wspolrzedne[0], users[i].wspolrzedne[1])
+    map_widget.set_zoom(12)
 
 def edytuj_uzytkownika():
     i = listbox_lista_obiektow.index(ACTIVE)
@@ -156,7 +171,7 @@ label_lokalizacja_szczegoly_obiektu_wartosc.grid(row=1, column=7)
 map_widget= tkintermapview.TkinterMapView(ramka_szczegoly_obiektow,width=900, height=500)
 map_widget.set_position(52.2,21,)
 map_widget.set_zoom(8)
-marker_WAT = map_widget.set_marker(52.2535366749137, 20.900154996359838, text="WAT")
+#marker_WAT = map_widget.set_marker(52.2535366749137, 20.900154996359838, text="WAT")
 
 
 
